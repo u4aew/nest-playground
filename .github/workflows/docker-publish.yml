@@ -34,6 +34,6 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             docker pull u4aew/nest:latest
-            docker stop myapp || true
-            docker rm myapp || true
+            docker stop nest || true
+            docker rm nest || true
             docker run -d --name nest -p 6060:3000 u4aew/nest:latest          
