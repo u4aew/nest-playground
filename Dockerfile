@@ -4,7 +4,7 @@ FROM node:20-alpine
 # Create app directory
 WORKDIR /usr/src/app
 
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
+# A wildcard is used to ensure both package.json AND package-lock.json
 COPY package*.json ./
 
 RUN npm install
