@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build
 
 # Открыть порт, на котором запущено приложение
-EXPOSE 6060
+EXPOSE 3000
 
 # Start the server using the production build
 CMD [ "node", "dist/main.js" ]

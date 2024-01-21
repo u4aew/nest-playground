@@ -22,7 +22,7 @@ services:
   nestapp:
     build: .
     ports:
-      - "6060:6060"
+      - "3000:3000"
     environment:
       - DATABASE_URL=postgres://ADMIN:ROOT@postgres/DB
     depends_on:
