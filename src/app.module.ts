@@ -10,8 +10,8 @@ import { RegistrationModule } from './modules/registration/registration.module';
     AuthModule,
     TypeOrmModule.forRoot({
       type: 'postgres', // тип базы данных
-      // host: 'postgres', // хост, используйте 'postgres' если запускаете через Docker Compose
-      host: 'localhost', // хост, используйте 'postgres' если запускаете через Docker Compose
+      host: 'postgres', // хост, используйте 'postgres' если запускаете через Docker Compose
+      // host: 'localhost', // хост, используйте 'postgres' если запускаете через Docker Compose
       port: 5432, // порт, по умолчанию для PostgreSQL
       username: 'ADMIN', // ваше имя пользователя в PostgreSQL
       password: 'ROOT', // ваш пароль
