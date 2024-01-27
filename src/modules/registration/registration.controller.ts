@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query } from '@nestjs/common';
 import { RegistrationService } from './registration.service';
 
 @Controller('proxy/registration')
@@ -14,5 +14,10 @@ export class RegistrationController {
       body.password,
       body.name,
     );
+  }
+
+  @Get('confirm')
+  async confirmEmail(@Query('token') token: string) {
+    return this.registrationService.confirmEmail(token);
   }
 }
