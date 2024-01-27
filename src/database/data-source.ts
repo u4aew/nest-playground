@@ -1,6 +1,5 @@
-// data-source.ts
 import { DataSource } from 'typeorm';
-import { User } from '../modules/registration/entity/user.entity'; // Замените на ваши сущности
+import { User } from '../modules/registration/entity/user.entity';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',

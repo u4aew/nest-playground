@@ -16,8 +16,8 @@ export class RegistrationController {
     );
   }
 
-  @Get('confirm')
-  async confirmEmail(@Query('token') token: string) {
-    return this.registrationService.confirmEmail(token);
+  @Post('confirm')
+  async confirmEmail(@Body() body: { token: string }) {
+    return this.registrationService.confirmEmail(body.token);
   }
 }

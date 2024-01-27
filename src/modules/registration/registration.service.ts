@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entity/user.entity';
@@ -33,24 +37,27 @@ export class RegistrationService {
     user.emailConfirmationToken = token;
     await this.userRepository.save(user);
 
-    await this.mailerService.sendMail({
-      to: user.email,
-      subject: 'Подтверждение почты',
-      template: 'confirmation',
-      context: {
-        name: user.name,
-        token,
-      },
-    });
+    // await this.mailerService.sendMail({
+    //   to: user.email,
+    //   subject: 'Подтверждение почты',
+    //   template: 'confirmation',
+    //   context: {
+    //     name: user.name,
+    //     token,
+    //   },
+    // });
   }
 
   async confirmEmail(token: string): Promise<User> {
+    if (!token) {
+      throw new BadRequestException('Token is required');
+    }
     const user = await this.userRepository.findOne({
       where: { emailConfirmationToken: token },
     });
 
     if (!user) {
-      return null;
+      throw new NotFoundException('User not found');
     }
 
     user.isEmailConfirmed = true;
