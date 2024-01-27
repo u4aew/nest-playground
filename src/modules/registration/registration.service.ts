@@ -36,7 +36,7 @@ export class RegistrationService {
     await this.mailerService.sendMail({
       to: user.email,
       subject: 'Подтверждение почты',
-      template: 'confirmation.html', // путь к вашему шаблону письма
+      template: 'confirmation',
       context: {
         name: user.name,
         token,

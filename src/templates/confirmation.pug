@@ -1,0 +1,9 @@
+doctype html
+html
+  head
+    title Подтверждение Email
+  body
+    p Здравствуйте, #{name}!
+    p Спасибо за регистрацию. Пожалуйста, подтвердите свой адрес электронной почты, нажав на ссылку ниже:
+    a(href=`http://yourwebsite.com/proxy/registration/confirm?token=${token}`) Подтвердить Email
+    p Если вы не регистрировались на нашем сайте, проигнорируйте это письмо.
