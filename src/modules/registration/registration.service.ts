@@ -18,22 +18,32 @@ export class RegistrationService {
   ) {}
 
   async register(email: string, password: string, name: string): Promise<User> {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await this.hashPassword(password);
+    const newUser = await this.createUser(email, hashedPassword, name);
+    await this.sendConfirmationEmail(newUser);
+    return newUser;
+  }
+
+  private async hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, 10);
+  }
+
+  private async createUser(email: string, hashedPassword: string, name: string): Promise<User> {
     const user = this.userRepository.create({
       email,
       password: hashedPassword,
       name,
     });
 
-    const savedUser = await this.userRepository.save(user);
-
-    await this.sendConfirmationEmail(savedUser);
-
-    return savedUser;
+    return this.userRepository.save(user);
   }
 
-  async sendConfirmationEmail(user: User) {
-    const token = await bcrypt.hash(user.email, 10); // генерируем токен
+  private async generateEmailConfirmationToken(email: string): Promise<string> {
+    return bcrypt.hash(email, 10);
+  }
+
+  private async sendConfirmationEmail(user: User) {
+    const token = await this.generateEmailConfirmationToken(user.email);
     user.emailConfirmationToken = token;
     await this.userRepository.save(user);
 
@@ -52,6 +62,13 @@ export class RegistrationService {
     if (!token) {
       throw new BadRequestException('Token is required');
     }
+
+    const user = await this.findUserByConfirmationToken(token);
+    await this.markEmailAsConfirmed(user);
+    return user;
+  }
+
+  private async findUserByConfirmationToken(token: string): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { emailConfirmationToken: token },
     });
@@ -60,9 +77,12 @@ export class RegistrationService {
       throw new NotFoundException('User not found');
     }
 
+    return user;
+  }
+
+  private async markEmailAsConfirmed(user: User): Promise<User> {
     user.isEmailConfirmed = true;
     user.emailConfirmationToken = null;
-
     return this.userRepository.save(user);
   }
 }
