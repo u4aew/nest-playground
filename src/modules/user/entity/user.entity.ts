@@ -21,6 +21,9 @@ export class User {
   @Column({ nullable: true })
   emailConfirmationToken: string;
 
+  @Column({ nullable: true })
+  passwordResetToken: string;
+
   async validatePassword(password: string): Promise<boolean> {
     return bcrypt.compare(password, this.password);
   }

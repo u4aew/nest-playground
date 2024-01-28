@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { User } from '../user/entity/user.entity';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ResponseDto } from '../../shared/dto/response.dto';
+import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -16,6 +17,7 @@ export class RegistrationService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private readonly mailerService: MailerService,
+    private readonly configService: ConfigService,
   ) {}
 
   async register(
@@ -56,10 +58,10 @@ export class RegistrationService {
     user.emailConfirmationToken = token;
     await this.userRepository.save(user);
 
-    if (process.env.NODE_ENV === 'production') {
+    if (this.configService.get<string>('SEND_EMAILS') === 'true') {
       await this.mailerService.sendMail({
         to: user.email,
-        subject: 'Подтверждение почты',
+        subject: 'Confirm mail',
         template: 'confirmation',
         context: {
           name: user.name,
@@ -67,6 +69,48 @@ export class RegistrationService {
         },
       });
     }
+  }
+
+  async requestPasswordReset(email: string): Promise<ResponseDto> {
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const token = await bcrypt.hash(user.email, 10);
+    user.passwordResetToken = token;
+    await this.userRepository.save(user);
+    if (this.configService.get<string>('SEND_EMAILS') === 'true') {
+      await this.mailerService.sendMail({
+        to: user.email,
+        subject: 'Reset password',
+        template: 'reset',
+        context: {
+          name: user.name,
+          token,
+        },
+      });
+    }
+
+    return { message: 'Password reset email sent' };
+  }
+
+  async resetPassword(
+    token: string,
+    newPassword: string,
+  ): Promise<ResponseDto> {
+    const user = await this.userRepository.findOne({
+      where: { passwordResetToken: token },
+    });
+    if (!user) {
+      throw new NotFoundException('Invalid token');
+    }
+
+    user.password = await this.hashPassword(newPassword);
+    user.passwordResetToken = null;
+    await this.userRepository.save(user);
+
+    return { message: 'Password reset successfully' };
   }
 
   async confirmEmail(token: string): Promise<ResponseDto> {

@@ -1,0 +1,9 @@
+doctype html
+html
+  head
+    title Сброс пароля
+  body
+    p Здравствуйте, #{name}!
+    p Пожалуйста, сбросьте свой пароль, нажав на ссылку ниже:
+    a(href=`http://yourwebsite.com/proxy/registration/reset?token=${token}`) Сбросить
+    p Если вы не регистрировались на нашем сайте, проигнорируйте это письмо.
