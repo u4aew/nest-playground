@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { RegistrationModule } from './modules/registration/registration.module';
+import { UserModule } from './modules/user/user.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DatabaseExceptionFilter } from './shared/filters/database-exception.filter';
@@ -28,6 +29,7 @@ import { mailerConfig } from './config/mailer.config';
     }),
     RegistrationModule,
     AuthModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [

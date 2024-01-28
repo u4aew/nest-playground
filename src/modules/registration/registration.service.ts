@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './entity/user.entity';
+import { User } from '../user/entity/user.entity';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ResponseDto } from '../../shared/dto/response.dto';
 import * as bcrypt from 'bcrypt';
