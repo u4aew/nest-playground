@@ -14,4 +14,7 @@ export class CreateUserDto {
   @IsNotEmpty()
   @Length(6, 20)
   password: string;
+
+  @IsString()
+  locale: string;
 }

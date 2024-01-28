@@ -27,15 +27,18 @@ export class UserService {
   async updateUserName(
     id: number,
     newName: string,
-  ): Promise<Pick<User, 'name'>> {
+    locale?: string,
+  ): Promise<Pick<User, 'name' | 'locale'>> {
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
-
     user.name = newName;
+    if (locale) {
+      user.locale = locale;
+    }
     await this.userRepository.save(user);
-    return { name: user.name };
+    return { name: user.name, locale: user.locale };
   }
   async validatePassword(user: User, password: string): Promise<boolean> {
     return user.validatePassword(password);

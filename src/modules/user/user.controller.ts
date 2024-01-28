@@ -24,7 +24,11 @@ export class UserController {
   async updateUserName(
     @Req() req: RequestWithUser,
     @Body() updateUserDto: UpdateUserDto,
-  ): Promise<Pick<User, 'name'>> {
-    return this.userService.updateUserName(req.user.id, updateUserDto.name);
+  ): Promise<Pick<User, 'name' | 'locale'>> {
+    return this.userService.updateUserName(
+      req.user.id,
+      updateUserDto.name,
+      updateUserDto.locale,
+    );
   }
 }
