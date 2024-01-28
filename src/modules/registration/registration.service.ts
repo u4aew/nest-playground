@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entity/user.entity';
 import { MailerService } from '@nestjs-modules/mailer';
+import { ResponseDto } from '../../shared/dto/response.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -17,18 +18,26 @@ export class RegistrationService {
     private readonly mailerService: MailerService,
   ) {}
 
-  async register(email: string, password: string, name: string): Promise<User> {
+  async register(
+    email: string,
+    password: string,
+    name: string,
+  ): Promise<ResponseDto> {
     const hashedPassword = await this.hashPassword(password);
     const newUser = await this.createUser(email, hashedPassword, name);
     await this.sendConfirmationEmail(newUser);
-    return newUser;
+    return { message: 'User registered successfully' };
   }
 
   private async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, 10);
   }
 
-  private async createUser(email: string, hashedPassword: string, name: string): Promise<User> {
+  private async createUser(
+    email: string,
+    hashedPassword: string,
+    name: string,
+  ): Promise<User> {
     const user = this.userRepository.create({
       email,
       password: hashedPassword,
@@ -58,14 +67,14 @@ export class RegistrationService {
     });
   }
 
-  async confirmEmail(token: string): Promise<User> {
+  async confirmEmail(token: string): Promise<ResponseDto> {
     if (!token) {
       throw new BadRequestException('Token is required');
     }
 
     const user = await this.findUserByConfirmationToken(token);
     await this.markEmailAsConfirmed(user);
-    return user;
+    return { message: 'Email confirmed successfully' };
   }
 
   private async findUserByConfirmationToken(token: string): Promise<User> {

@@ -1,23 +1,25 @@
-import { Controller, Post, Body, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body, UseFilters } from '@nestjs/common';
 import { RegistrationService } from './registration.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { ConfirmEmailDto } from './dto/confirm-email.dto';
+import { DatabaseExceptionFilter } from '../../shared/filters/database-exception.filter';
 
 @Controller('proxy/registration')
+@UseFilters(new DatabaseExceptionFilter())
 export class RegistrationController {
   constructor(private readonly registrationService: RegistrationService) {}
 
   @Post()
-  async register(
-    @Body() body: { email: string; password: string; name: string },
-  ) {
+  async register(@Body() createUserDto: CreateUserDto) {
     return this.registrationService.register(
-      body.email,
-      body.password,
-      body.name,
+      createUserDto.email,
+      createUserDto.password,
+      createUserDto.name,
     );
   }
 
   @Post('confirm')
-  async confirmEmail(@Body() body: { token: string }) {
-    return this.registrationService.confirmEmail(body.token);
+  async confirmEmail(@Body() confirmEmailDto: ConfirmEmailDto) {
+    return this.registrationService.confirmEmail(confirmEmailDto.token);
   }
 }
