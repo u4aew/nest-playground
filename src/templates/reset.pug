@@ -1,9 +1,56 @@
 doctype html
 html
-  head
-    title Сброс пароля
-  body
-    p Здравствуйте, #{name}!
-    p Пожалуйста, сбросьте свой пароль, нажав на ссылку ниже:
-    a(href=`http://yourwebsite.com/proxy/registration/reset?token=${token}`) Сбросить
-    p Если вы не регистрировались на нашем сайте, проигнорируйте это письмо.
+    head
+        title Сброс пароля
+        style.
+            body {
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                background-color: #eeeeee;
+                color: #333;
+                padding: 5px;
+            }
+
+            .container {
+                background-color: #fff;
+                padding: 40px;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+                max-width: 600px;
+                margin: 40px auto;
+                text-align: center;
+            }
+
+            h1 {
+                color: #333;
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+
+            p {
+                font-size: 16px;
+                line-height: 1.5;
+                margin-bottom: 20px;
+            }
+
+            a {
+                background-color: #0069d9;
+                color: white;
+                padding: 12px 25px;
+                text-decoration: none;
+                border-radius: 4px;
+                font-weight: bold;
+                font-size: 16px;
+                transition: background-color 0.3s;
+            }
+
+            a:hover {
+                background-color: #0056b3;
+            }
+
+    body
+        .container
+            h1 Сброс пароля
+            p Здравствуйте, #{name}!
+            p Мы получили запрос на сброс пароля вашего аккаунта. Если вы действительно хотите его сбросить, пожалуйста, используйте ссылку ниже:
+            a(href=`http://yourwebsite.com/proxy/registration/reset?token=${token}`) Сбросить пароль
+            p Если вы не запрашивали сброс пароля, пожалуйста, проигнорируйте это письмо.

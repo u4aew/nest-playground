@@ -1,9 +1,56 @@
 doctype html
 html
-  head
-    title Подтверждение Email
-  body
-    p Здравствуйте, #{name}!
-    p Спасибо за регистрацию. Пожалуйста, подтвердите свой адрес электронной почты, нажав на ссылку ниже:
-    a(href=`http://yourwebsite.com/proxy/registration/confirm?token=${token}`) Подтвердить Email
-    p Если вы не регистрировались на нашем сайте, проигнорируйте это письмо.
+    head
+        title Подтверждение Email
+        style.
+            body {
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                background-color: #eeeeee;
+                color: #333;
+                padding: 5px;
+            }
+
+            .container {
+                background-color: #fff;
+                padding: 40px;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+                max-width: 600px;
+                margin: 40px auto;
+                text-align: center;
+            }
+
+            h1 {
+                color: #333;
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+
+            p {
+                font-size: 16px;
+                line-height: 1.5;
+                margin-bottom: 20px;
+            }
+
+            a {
+                background-color: #28a745;
+                color: white;
+                padding: 12px 25px;
+                text-decoration: none;
+                border-radius: 4px;
+                font-weight: bold;
+                font-size: 16px;
+                transition: background-color 0.3s;
+            }
+
+            a:hover {
+                background-color: #218838;
+            }
+
+    body
+        .container
+            h1 Подтверждение Email
+            p Здравствуйте, #{name}!
+            p Мы рады, что вы присоединились к нам! Пожалуйста, подтвердите свой адрес электронной почты, нажав на ссылку ниже, чтобы активировать ваш аккаунт:
+            a(href=`http://yourwebsite.com/proxy/registration/confirm?token=${token}`) Подтвердить Email
+            p Если вы не создавали аккаунт на нашем сайте, пожалуйста, проигнорируйте это письмо.
