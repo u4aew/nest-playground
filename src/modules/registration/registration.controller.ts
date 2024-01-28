@@ -1,10 +1,10 @@
 import { Controller, Post, Body, UseFilters } from '@nestjs/common';
+import { DatabaseExceptionFilter } from '../../shared/filters/database-exception.filter';
 import { RegistrationService } from './registration.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ConfirmEmailDto } from './dto/confirm-email.dto';
 import { RequestResetDto } from './dto/request-reset.dto';
 import { ConfirmResetDto } from './dto/confirm-reset.dto';
-import { DatabaseExceptionFilter } from '../../shared/filters/database-exception.filter';
 
 @Controller('proxy/registration')
 @UseFilters(new DatabaseExceptionFilter())
@@ -34,7 +34,7 @@ export class RegistrationController {
   /**
    * Request password reset.
    */
-  @Post('reset/request')
+  @Post('reset')
   async requestReset(@Body() requestResetDto: RequestResetDto) {
     return this.registrationService.requestPasswordReset(requestResetDto.email);
   }
