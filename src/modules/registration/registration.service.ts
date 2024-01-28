@@ -56,15 +56,17 @@ export class RegistrationService {
     user.emailConfirmationToken = token;
     await this.userRepository.save(user);
 
-    await this.mailerService.sendMail({
-      to: user.email,
-      subject: 'Подтверждение почты',
-      template: 'confirmation',
-      context: {
-        name: user.name,
-        token,
-      },
-    });
+    if (process.env.NODE_ENV === 'production') {
+      await this.mailerService.sendMail({
+        to: user.email,
+        subject: 'Подтверждение почты',
+        template: 'confirmation',
+        context: {
+          name: user.name,
+          token,
+        },
+      });
+    }
   }
 
   async confirmEmail(token: string): Promise<ResponseDto> {

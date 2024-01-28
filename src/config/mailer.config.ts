@@ -1,23 +1,25 @@
 import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
+import { ConfigService } from '@nestjs/config';
+import * as path from 'path';
 
-export const mailerConfig = {
+export const mailerConfig = (configService: ConfigService) => ({
   transport: {
-    host: 'smtp.office365.com',
+    host: configService.get<string>('MAIL_HOST'),
     secure: false,
-    port: 587,
+    port: configService.get<number>('MAIL_PORT'),
     auth: {
-      user: 'crudtestappnest123@outlook.com',
-      pass: '550dON6e6ROu',
+      user: configService.get<string>('MAIL_USER'),
+      pass: configService.get<string>('MAIL_PASSWORD'),
     },
   },
   defaults: {
-    from: '"Test app" crudtestappnest123@outlook.com',
+    from: configService.get<string>('MAIL_FROM'),
   },
   template: {
-    dir: __dirname + '/templates',
+    dir: path.join(__dirname, '..', 'templates'),
     adapter: new PugAdapter(),
     options: {
       strict: true,
     },
   },
-};
+});
