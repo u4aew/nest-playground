@@ -8,12 +8,16 @@ import { Repository } from 'typeorm';
 import { User } from './entity/user.entity';
 import { UserInfo } from './types';
 import * as bcrypt from 'bcrypt';
+import { MailerService } from '@nestjs-modules/mailer';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private readonly mailerService: MailerService,
+    private readonly configService: ConfigService,
   ) {}
 
   async findByEmail(email: string): Promise<User> {
@@ -70,7 +74,49 @@ export class UserService {
     await this.userRepository.save(user);
   }
 
+  async requestEmailUpdate(userId: number, newEmail: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException(`Пользователь с ID ${userId} не найден`);
+    }
+
+    // генерируем OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // сохраняем OTP и новую почту в базе данных
+    user.otpEmail = otp;
+    user.newEmail = newEmail;
+    user.otpEmailCreatedAt = new Date();
+
+    await this.userRepository.save(user);
+
+    // отправляем OTP на старую почту пользователя
+    await this.sendEmail(
+      user,
+      'Подтвердите новый адрес электронной почты',
+      'change-email_ru',
+      otp,
+    );
+  }
+
   async validatePassword(user: User, password: string): Promise<boolean> {
     return user.validatePassword(password);
+  }
+
+  private async sendEmail(
+    user: User,
+    subject: string,
+    template: string,
+    otp: string,
+  ): Promise<void> {
+    if (this.configService.get<string>('SEND_EMAILS') === 'true') {
+      await this.mailerService.sendMail({
+        to: user.email,
+        subject,
+        template,
+        context: { name: user.name, otp },
+      });
+    }
   }
 }

@@ -16,7 +16,7 @@ COPY . .
 RUN npm run build
 
 # Run migrations
-RUN npx typeorm migration:run -d dist/database/data-source.js
+# RUN npx typeorm migration:run -d dist/database/data-source.js
 
 # Открыть порт, на котором запущено приложение
 EXPOSE 3000
