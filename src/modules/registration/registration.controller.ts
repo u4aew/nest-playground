@@ -5,6 +5,8 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { ConfirmEmailDto } from './dto/confirm-email.dto';
 import { RequestResetDto } from './dto/request-reset.dto';
 import { ConfirmResetDto } from './dto/confirm-reset.dto';
+import { ResponseDto } from '../../shared/dto/response.dto';
+import { User } from '../user/entity/user.entity';
 
 @Controller('proxy/registration')
 @UseFilters(new DatabaseExceptionFilter())
@@ -15,38 +17,50 @@ export class RegistrationController {
    * Register a new user.
    */
   @Post()
-  async register(@Body() createUserDto: CreateUserDto) {
-    return this.registrationService.register(
+  async register(
+    @Body() createUserDto: CreateUserDto,
+  ): Promise<ResponseDto<User>> {
+    await this.registrationService.register(
       createUserDto.email,
       createUserDto.password,
       createUserDto.name,
     );
+    return new ResponseDto();
   }
 
   /**
    * Confirm user email.
    */
   @Post('confirm')
-  async confirmEmail(@Body() confirmEmailDto: ConfirmEmailDto) {
-    return this.registrationService.confirmEmail(confirmEmailDto.token);
+  async confirmEmail(
+    @Body() confirmEmailDto: ConfirmEmailDto,
+  ): Promise<ResponseDto<User>> {
+    await this.registrationService.confirmEmail(confirmEmailDto.token);
+    return new ResponseDto();
   }
 
   /**
    * Request password reset.
    */
   @Post('reset')
-  async requestReset(@Body() requestResetDto: RequestResetDto) {
-    return this.registrationService.requestPasswordReset(requestResetDto.email);
+  async requestReset(
+    @Body() requestResetDto: RequestResetDto,
+  ): Promise<ResponseDto<User>> {
+    await this.registrationService.requestPasswordReset(requestResetDto.email);
+    return new ResponseDto();
   }
 
   /**
    * Confirm password reset.
    */
   @Post('reset/confirm')
-  async confirmReset(@Body() confirmResetDto: ConfirmResetDto) {
-    return this.registrationService.resetPassword(
+  async confirmReset(
+    @Body() confirmResetDto: ConfirmResetDto,
+  ): Promise<ResponseDto<User>> {
+    await this.registrationService.resetPassword(
       confirmResetDto.token,
       confirmResetDto.newPassword,
     );
+    return new ResponseDto();
   }
 }

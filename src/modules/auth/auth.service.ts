@@ -17,8 +17,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = { sub: user.id, email: user.email }; // Можете добавить другие данные пользователя
-    const token = this.jwtService.sign(payload);
+    const token = this.jwtService.sign({ sub: user.id, email: user.email });
 
     return { token };
   }

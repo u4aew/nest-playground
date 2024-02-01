@@ -1,13 +1,14 @@
+require('dotenv').config();
 import { DataSource } from 'typeorm';
 import { User } from '../modules/user/entity/user.entity';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
-  host: 'localhost',
-  port: 5432,
-  username: 'ADMIN',
-  password: 'ROOT',
-  database: 'DB',
+  host: process.env.DATABASE_HOST,
+  port: Number(process.env.DATABASE_PORT),
+  username: process.env.DATABASE_USER,
+  password: process.env.DATABASE_PASSWORD,
+  database: process.env.DATABASE_NAME,
   entities: [User],
   migrations: ['dist/migration/**/*.js'],
 });

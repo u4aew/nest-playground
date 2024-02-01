@@ -7,7 +7,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../user/entity/user.entity';
 import { MailerService } from '@nestjs-modules/mailer';
-import { ResponseDto } from '../../shared/dto/response.dto';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 
@@ -22,11 +21,7 @@ export class RegistrationService {
     private readonly configService: ConfigService,
   ) {}
 
-  async register(
-    email: string,
-    password: string,
-    name: string,
-  ): Promise<ResponseDto> {
+  async register(email: string, password: string, name: string): Promise<User> {
     const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
     const emailConfirmationToken = await this.generateToken(email);
     const newUser = this.userRepository.create({
@@ -42,36 +37,33 @@ export class RegistrationService {
       'confirmation',
       emailConfirmationToken,
     );
-    return { message: 'User registered successfully' };
+    return newUser;
   }
 
-  async requestPasswordReset(email: string): Promise<ResponseDto> {
+  async requestPasswordReset(email: string): Promise<User> {
     const user = await this.findUserByEmail(email);
     const token = await this.generateToken(user.email);
     user.passwordResetToken = token;
     await this.userRepository.save(user);
     await this.sendEmail(user, 'Reset password', 'reset', token);
-    return { message: 'Password reset email sent' };
+    return user;
   }
 
-  async resetPassword(
-    token: string,
-    newPassword: string,
-  ): Promise<ResponseDto> {
+  async resetPassword(token: string, newPassword: string): Promise<User> {
     const user = await this.findUserByToken(token, 'passwordResetToken');
     user.password = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS);
     user.passwordResetToken = null;
     await this.userRepository.save(user);
-    return { message: 'Password reset successfully' };
+    return user;
   }
 
-  async confirmEmail(token: string): Promise<ResponseDto> {
+  async confirmEmail(token: string): Promise<User> {
     if (!token) throw new BadRequestException('Token is required');
     const user = await this.findUserByToken(token, 'emailConfirmationToken');
     user.isEmailConfirmed = true;
     user.emailConfirmationToken = null;
     await this.userRepository.save(user);
-    return { message: 'Email confirmed successfully' };
+    return user;
   }
 
   private async findUserByEmail(email: string): Promise<User> {
@@ -100,7 +92,7 @@ export class RegistrationService {
     subject: string,
     template: string,
     token: string,
-  ) {
+  ): Promise<void> {
     if (this.configService.get<string>('SEND_EMAILS') === 'true') {
       await this.mailerService.sendMail({
         to: user.email,
