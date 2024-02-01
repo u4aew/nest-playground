@@ -34,7 +34,7 @@ export class RegistrationService {
     await this.sendEmail(
       newUser,
       'Confirm mail',
-      'confirmation',
+      'confirmation_ru',
       emailConfirmationToken,
     );
     return newUser;
@@ -45,7 +45,7 @@ export class RegistrationService {
     const token = await this.generateToken(user.email);
     user.passwordResetToken = token;
     await this.userRepository.save(user);
-    await this.sendEmail(user, 'Reset password', 'reset', token);
+    await this.sendEmail(user, 'Reset password', 'reset_ru', token);
     return user;
   }
 
