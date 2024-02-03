@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
+import { TokenModule } from './modules/token/token.module';
 import { RegistrationModule } from './modules/registration/registration.module';
 import { UserModule } from './modules/user/user.module';
 import { MailerModule } from '@nestjs-modules/mailer';
@@ -30,6 +31,7 @@ import { mailerConfig } from './config/mailer.config';
     RegistrationModule,
     AuthModule,
     UserModule,
+    TokenModule,
   ],
   controllers: [AppController],
   providers: [

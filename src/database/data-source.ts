@@ -1,6 +1,7 @@
 require('dotenv').config();
 import { DataSource } from 'typeorm';
 import { User } from '../modules/user/entity/user.entity';
+import { Token } from '../modules/token/entity/token.entity';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -9,7 +10,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DATABASE_USER,
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
-  entities: [User],
+  entities: [User, Token],
   migrations: ['dist/migration/**/*.js'],
 });
 

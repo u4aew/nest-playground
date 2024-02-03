@@ -1,15 +1,27 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
-  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../user/entity/user.entity';
+import { TokenService } from '../token/token.service';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import { TokenType } from '../token/entity/token.entity';
 
+const emailsTemplateConfig = {
+  confirmEmail: {
+    subject: 'Confirm mail',
+    template: 'confirmation_ru',
+  },
+  resetPassword: {
+    subject: 'Reset password',
+    template: 'reset_ru',
+  },
+};
 const BCRYPT_SALT_ROUNDS = 10;
 
 @Injectable()
@@ -19,72 +31,100 @@ export class RegistrationService {
     private userRepository: Repository<User>,
     private readonly mailerService: MailerService,
     private readonly configService: ConfigService,
+    private readonly tokenService: TokenService,
   ) {}
 
-  async register(email: string, password: string, name: string): Promise<User> {
+  async register(email: string, password: string, name: string): Promise<any> {
     const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
-    const emailConfirmationToken = await this.generateToken(email);
+
+    const user = await this.userRepository.findOne({ where: { email } });
+
+    if (user) {
+      if (user.isEmailConfirmed) {
+        throw new BadRequestException('USER_ALREADY_REGISTER');
+      } else {
+        throw new BadRequestException('USER_NEED_CONFIRM_EMAIL');
+      }
+    }
+
     const newUser = this.userRepository.create({
       email,
       password: hashedPassword,
       name,
-      emailConfirmationToken,
     });
     await this.userRepository.save(newUser);
-    await this.sendEmail(
+
+    const emailConfirmationToken = await this.tokenService.saveUserToken(
+      email,
       newUser,
-      'Confirm mail',
-      'confirmation_ru',
+      TokenType.EMAIL_CONFIRMATION,
+    );
+
+    return await this.sendEmail(
+      newUser,
+      emailsTemplateConfig.confirmEmail.subject,
+      emailsTemplateConfig.confirmEmail.template,
       emailConfirmationToken,
     );
-    return newUser;
   }
 
   async requestPasswordReset(email: string): Promise<User> {
     const user = await this.findUserByEmail(email);
-    const token = await this.generateToken(user.email);
-    user.passwordResetToken = token;
-    await this.userRepository.save(user);
-    await this.sendEmail(user, 'Reset password', 'reset_ru', token);
+
+    if (!user) {
+      throw new BadRequestException('Email invalid');
+    }
+
+    const passwordResetToken = await this.tokenService.saveUserToken(
+      email,
+      user,
+      TokenType.PASSWORD_RESET,
+    );
+
+    await this.sendEmail(
+      user,
+      emailsTemplateConfig.resetPassword.subject,
+      emailsTemplateConfig.resetPassword.template,
+      passwordResetToken,
+    );
+
     return user;
   }
 
-  async resetPassword(token: string, newPassword: string): Promise<User> {
-    const user = await this.findUserByToken(token, 'passwordResetToken');
+  async resetPassword(token: string, newPassword: string): Promise<any> {
+    const user = await this.tokenService.findUserByToken(
+      token,
+      TokenType.PASSWORD_RESET,
+    );
     user.password = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS);
-    user.passwordResetToken = null;
+    await this.tokenService.removeTokenByUser(user, TokenType.PASSWORD_RESET);
     await this.userRepository.save(user);
-    return user;
+    return true;
   }
 
-  async confirmEmail(token: string): Promise<User> {
-    if (!token) throw new BadRequestException('Token is required');
-    const user = await this.findUserByToken(token, 'emailConfirmationToken');
+  async confirmEmail(token: string): Promise<{ code: string }> {
+    const user = await this.tokenService.findUserByToken(
+      token,
+      TokenType.EMAIL_CONFIRMATION,
+    );
+    if (!user) {
+      throw new BadRequestException('Token invalid');
+    }
     user.isEmailConfirmed = true;
-    user.emailConfirmationToken = null;
+    await this.tokenService.removeTokenByUser(
+      user,
+      TokenType.EMAIL_CONFIRMATION,
+    );
     await this.userRepository.save(user);
-    return user;
+    return {
+      code: 'SUCCESS',
+    };
   }
 
   private async findUserByEmail(email: string): Promise<User> {
     const user = await this.userRepository.findOne({ where: { email } });
     if (!user) throw new NotFoundException('User not found');
     return user;
-  }
-
-  private async findUserByToken(
-    token: string,
-    tokenField: keyof User,
-  ): Promise<User> {
-    const user = await this.userRepository.findOne({
-      where: { [tokenField]: token },
-    });
-    if (!user) throw new NotFoundException('User not found');
-    return user;
-  }
-
-  private async generateToken(data: string): Promise<string> {
-    return bcrypt.hash(data, BCRYPT_SALT_ROUNDS);
   }
 
   private async sendEmail(

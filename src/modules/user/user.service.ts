@@ -85,9 +85,6 @@ export class UserService {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     // сохраняем OTP и новую почту в базе данных
-    user.otpEmail = otp;
-    user.newEmail = newEmail;
-    user.otpEmailCreatedAt = new Date();
 
     await this.userRepository.save(user);
 
