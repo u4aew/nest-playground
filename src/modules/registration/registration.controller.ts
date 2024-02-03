@@ -45,10 +45,10 @@ export class RegistrationController {
    * Request password reset.
    */
   @Post('password/reset')
-  async requestResetPassword(
+  async resetPassword(
     @Body() requestResetDto: RequestResetDto,
   ): Promise<ResponseDto<User>> {
-    await this.registrationService.requestResetPassword(requestResetDto.email);
+    await this.registrationService.resetPassword(requestResetDto.email);
     return new ResponseDto();
   }
 

@@ -101,6 +101,25 @@ export class UserService {
     return user.validatePassword(password);
   }
 
+  async findUserByEmail(email: string): Promise<User> {
+    return await this.userRepository.findOne({ where: { email } });
+  }
+
+  async create(email, hashedPassword, name): Promise<User> {
+    const newUser = this.userRepository.create({
+      email,
+      password: hashedPassword,
+      name,
+    });
+
+    await this.save(newUser);
+    return newUser;
+  }
+
+  async save(user) {
+    await this.userRepository.save(user);
+  }
+
   private async sendEmail(
     user: User,
     subject: string,

@@ -1,45 +1,36 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { User } from '../user/entity/user.entity';
 import { TokenService } from '../token/token.service';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { TokenType } from '../token/entity/token.entity';
-
-const EMAILS_TEMPLATE_CONFIG = {
-  CONFIRM_EMAIL: {
-    SUBJECT: 'Confirm mail',
-    TEMPLATE: 'confirmation_ru',
-  },
-  RESET_PASSWORD: {
-    SUBJECT: 'Reset password',
-    TEMPLATE: 'reset_ru',
-  },
-};
-const BCRYPT_SALT_ROUNDS = 10;
-const SEND_EMAILS = 'SEND_EMAILS';
-const EMAIL_INVALID = 'EMAIL_INVALID';
-const TOKEN_INVALID = 'TOKEN_INVALID';
-const USER_ALREADY_REGISTER = 'USER_ALREADY_REGISTER';
-const USER_NEED_CONFIRM_EMAIL = 'USER_NEED_CONFIRM_EMAIL';
-const SUCCESS = 'SUCCESS';
+import { UserService } from '../user/user.service';
+import {
+  USER_ALREADY_REGISTER,
+  EMAILS_TEMPLATE_CONFIG,
+  EMAIL_INVALID,
+  SEND_EMAILS,
+  TOKEN_INVALID,
+  USER_NEED_CONFIRM_EMAIL,
+  BCRYPT_SALT_ROUNDS,
+  SUCCESS,
+} from './const';
 
 @Injectable()
 export class RegistrationService {
   constructor(
     @InjectRepository(User)
-    private userRepository: Repository<User>,
     private readonly mailerService: MailerService,
     private readonly configService: ConfigService,
     private readonly tokenService: TokenService,
+    private readonly userService: UserService,
   ) {}
 
   async register(email: string, password: string, name: string): Promise<any> {
     const hashedPassword = await this.hashPassword(password);
-
-    const user = await this.findUserByEmail(email);
+    const user = await this.userService.findUserByEmail(email);
 
     if (user) {
       if (user.isEmailConfirmed) {
@@ -49,12 +40,7 @@ export class RegistrationService {
       }
     }
 
-    const newUser = this.userRepository.create({
-      email,
-      password: hashedPassword,
-      name,
-    });
-    await this.userRepository.save(newUser);
+    const newUser = await this.userService.create(email, hashedPassword, name);
 
     const emailConfirmationToken = await this.tokenService.saveUserToken(
       email,
@@ -70,8 +56,27 @@ export class RegistrationService {
     );
   }
 
-  async requestResetPassword(email: string): Promise<User> {
-    const user = await this.findUserByEmail(email);
+  async confirmRegister(token: string): Promise<{ code: string }> {
+    const user = await this.tokenService.findUserByToken(
+      token,
+      TokenType.EMAIL_CONFIRMATION,
+    );
+    if (!user) {
+      throw new BadRequestException(TOKEN_INVALID);
+    }
+    user.isEmailConfirmed = true;
+    await this.tokenService.removeTokenByUser(
+      user,
+      TokenType.EMAIL_CONFIRMATION,
+    );
+    await this.userService.save(user);
+    return {
+      code: SUCCESS,
+    };
+  }
+
+  async resetPassword(email: string): Promise<User> {
+    const user = await this.userService.findUserByEmail(email);
 
     if (!user) {
       throw new BadRequestException(EMAIL_INVALID);
@@ -100,31 +105,8 @@ export class RegistrationService {
     );
     user.password = await this.hashPassword(newPassword);
     await this.tokenService.removeTokenByUser(user, TokenType.PASSWORD_RESET);
-    await this.userRepository.save(user);
+    await this.userService.save(user);
     return true;
-  }
-
-  async confirmRegister(token: string): Promise<{ code: string }> {
-    const user = await this.tokenService.findUserByToken(
-      token,
-      TokenType.EMAIL_CONFIRMATION,
-    );
-    if (!user) {
-      throw new BadRequestException(TOKEN_INVALID);
-    }
-    user.isEmailConfirmed = true;
-    await this.tokenService.removeTokenByUser(
-      user,
-      TokenType.EMAIL_CONFIRMATION,
-    );
-    await this.userRepository.save(user);
-    return {
-      code: SUCCESS,
-    };
-  }
-
-  private async findUserByEmail(email: string): Promise<User> {
-    return await this.userRepository.findOne({ where: { email } });
   }
 
   private async sendEmail(
