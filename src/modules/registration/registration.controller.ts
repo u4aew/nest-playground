@@ -25,7 +25,6 @@ export class RegistrationController {
       createUserDto.password,
       createUserDto.name,
     );
-    console.log(data, 'data');
     return new ResponseDto(data);
   }
 
@@ -33,10 +32,10 @@ export class RegistrationController {
    * Confirm user email.
    */
   @Post('confirm')
-  async confirmEmail(
+  async confirmRegister(
     @Body() confirmEmailDto: ConfirmEmailDto,
   ): Promise<ResponseDto<{ code: string }>> {
-    const data = await this.registrationService.confirmEmail(
+    const data = await this.registrationService.confirmRegister(
       confirmEmailDto.token,
     );
     return new ResponseDto({ data });
@@ -45,22 +44,22 @@ export class RegistrationController {
   /**
    * Request password reset.
    */
-  @Post('reset')
-  async requestReset(
+  @Post('password/reset')
+  async requestResetPassword(
     @Body() requestResetDto: RequestResetDto,
   ): Promise<ResponseDto<User>> {
-    await this.registrationService.requestPasswordReset(requestResetDto.email);
+    await this.registrationService.requestResetPassword(requestResetDto.email);
     return new ResponseDto();
   }
 
   /**
    * Confirm password reset.
    */
-  @Post('reset/confirm')
-  async confirmReset(
+  @Post('password/reset/confirm')
+  async confirmResetPassword(
     @Body() confirmResetDto: ConfirmResetDto,
   ): Promise<ResponseDto<User>> {
-    await this.registrationService.resetPassword(
+    await this.registrationService.confirmResetPassword(
       confirmResetDto.token,
       confirmResetDto.newPassword,
     );

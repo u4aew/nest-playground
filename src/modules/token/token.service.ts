@@ -1,10 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Token, TokenType } from './entity/token.entity';
 import { User } from '../user/entity/user.entity';
 import * as bcrypt from 'bcrypt';
 const BCRYPT_SALT_ROUNDS = 10;
+const TOKEN_EXPIRATION_TIME = 60 * 60 * 1000;
 
 @Injectable()
 export class TokenService {
@@ -17,24 +22,34 @@ export class TokenService {
 
   async saveUserToken(data: string, user: User, type: TokenType) {
     const hashedData = await bcrypt.hash(data, BCRYPT_SALT_ROUNDS);
-
+    const expiresAt = new Date(Date.now() + TOKEN_EXPIRATION_TIME);
     const token = new Token();
     token.value = hashedData;
     token.type = type;
     token.user = user;
+    token.expiresAt = expiresAt;
 
     await this.tokenRepository.save(token);
     return token.value;
   }
 
-  async findUserByToken(value: string, type: TokenType) {
-    const data = await this.tokenRepository.findOne({
-      where: { type, value },
-      relations: ['user'],
+  async findUserByToken(
+    tokenValue: string,
+    tokenType: TokenType,
+  ): Promise<User> {
+    const token = await this.tokenRepository.findOne({
+      where: { value: tokenValue, type: tokenType },
     });
-    if (!data)
-      throw new NotFoundException(`User not found for token: ${value}`);
-    return data.user;
+
+    if (!token) {
+      throw new BadRequestException('TOKEN_INVALID');
+    }
+
+    if (token.expiresAt < new Date()) {
+      throw new BadRequestException('TOKEN_EXPIRED');
+    }
+
+    return token.user;
   }
 
   async findTokenByUser(user: User, type: TokenType) {

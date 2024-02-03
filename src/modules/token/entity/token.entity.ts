@@ -23,6 +23,9 @@ export class Token {
   @CreateDateColumn()
   createdAt: Date;
 
+  @Column({ nullable: true })
+  expiresAt: Date;
+
   @Column({
     type: 'enum',
     enum: TokenType,
