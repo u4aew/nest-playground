@@ -9,6 +9,7 @@ import {
   USER_ALREADY_REGISTER,
   EMAIL_INVALID,
   TOKEN_INVALID,
+  USER_NEED_CONFIRM_EMAIL,
 } from '../../shared/const';
 
 @Injectable()
@@ -37,6 +38,8 @@ export class RegistrationService {
     if (user) {
       if (user.isEmailConfirmed) {
         throw new BadRequestException(USER_ALREADY_REGISTER);
+      } else {
+        throw new BadRequestException(USER_NEED_CONFIRM_EMAIL);
       }
     }
 
@@ -48,6 +51,38 @@ export class RegistrationService {
       TOKEN_TYPE.EMAIL_CONFIRMATION,
     );
     await this.mailService.sendRegisterTokenEmail(newUser, token);
+  }
+
+  /**
+   * Resends the email confirmation token to the user if the previous token has expired.
+   *
+   * @param {string} email - The email of the user who requests a new confirmation token.
+   * @throws {BadRequestException} - If the user does not exist or the email is already confirmed.
+   * @returns {Promise<void>}
+   */
+  async resendRegister(email: string): Promise<void> {
+    const user = await this.userService.findUserByEmail(email);
+
+    if (!user) {
+      throw new BadRequestException(EMAIL_INVALID);
+    }
+
+    if (user.isEmailConfirmed) {
+      throw new BadRequestException(USER_ALREADY_REGISTER);
+    }
+
+    await this.tokenService.removeTokenByUser(
+      user,
+      TOKEN_TYPE.EMAIL_CONFIRMATION,
+    );
+
+    const token = await this.tokenService.generateUserToken(
+      email,
+      user,
+      TOKEN_TYPE.EMAIL_CONFIRMATION,
+    );
+
+    await this.mailService.sendRegisterTokenEmail(user, token);
   }
 
   /**

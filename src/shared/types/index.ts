@@ -7,6 +7,7 @@ export interface RequestWithUser extends Request {
 
 export enum RESPONSE_HTTP_STATUS {
   SUCCESS = 'SUCCESS',
+  ERROR = 'ERROR',
 }
 
 export enum TOKEN_TYPE {

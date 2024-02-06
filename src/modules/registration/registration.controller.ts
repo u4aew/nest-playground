@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseFilters } from '@nestjs/common';
+import { Body, Controller, Post, UseFilters } from '@nestjs/common';
 import { DatabaseExceptionFilter } from '../../shared/filters/database-exception.filter';
 import { RegistrationService } from './registration.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -7,6 +7,7 @@ import { RequestResetDto } from './dto/request-reset.dto';
 import { ConfirmResetDto } from './dto/confirm-reset.dto';
 import { ResponseDto } from '../../shared/dto/response.dto';
 import { User } from '../user/entity/user.entity';
+import { RESPONSE_HTTP_STATUS } from '../../shared/types';
 
 @Controller('proxy/registration')
 @UseFilters(new DatabaseExceptionFilter())
@@ -25,6 +26,17 @@ export class RegistrationController {
       createUserDto.password,
       createUserDto.name,
     );
+    return new ResponseDto();
+  }
+
+  /**
+   * Resent register email.
+   */
+  @Post('resend')
+  async resendRegisterToken(
+    @Body() requestResetDto: RequestResetDto,
+  ): Promise<ResponseDto<User>> {
+    await this.registrationService.resendRegister(requestResetDto.email);
     return new ResponseDto();
   }
 

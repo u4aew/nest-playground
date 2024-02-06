@@ -11,6 +11,7 @@ import { TOKEN_TYPE } from '../../shared/types';
 import * as bcrypt from 'bcrypt';
 const BCRYPT_SALT_ROUNDS = 10;
 const TOKEN_EXPIRATION_TIME = 60 * 60 * 1000;
+const TOKEN_GENERATION_LIMIT_TIME = 3 * 60 * 1000;
 
 @Injectable()
 export class TokenService {
@@ -22,6 +23,19 @@ export class TokenService {
   ) {}
 
   async generateUserToken(data: string, user: User, type: TOKEN_TYPE) {
+    const lastToken = await this.tokenRepository.findOne({
+      where: { user: user, type: type },
+      order: { createdAt: 'DESC' },
+    });
+
+    if (
+      lastToken &&
+      new Date().getTime() - lastToken.createdAt.getTime() <
+        TOKEN_GENERATION_LIMIT_TIME
+    ) {
+      throw new BadRequestException('NEW_TOKEN_TIMEOUT');
+    }
+
     const hashedData = await bcrypt.hash(data, BCRYPT_SALT_ROUNDS);
     const expiresAt = new Date(Date.now() + TOKEN_EXPIRATION_TIME);
     const token = new Token();
