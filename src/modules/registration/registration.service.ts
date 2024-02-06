@@ -43,7 +43,7 @@ export class RegistrationService {
       }
     }
 
-    const hashedPassword = await this.cryptService.hashPassword(password);
+    const hashedPassword = await this.cryptService.hash(password);
     const newUser = await this.userService.create(email, hashedPassword, name);
     const token = await this.tokenService.generateUserToken(
       email,
@@ -150,7 +150,7 @@ export class RegistrationService {
       throw new BadRequestException(TOKEN_INVALID);
     }
 
-    user.password = await this.cryptService.hashPassword(newPassword);
+    user.password = await this.cryptService.hash(newPassword);
     await this.userService.save(user);
     await this.tokenService.removeTokenByUser(user, TOKEN_TYPE.PASSWORD_RESET);
   }

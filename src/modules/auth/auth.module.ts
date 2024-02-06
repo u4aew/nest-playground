@@ -7,6 +7,7 @@ import { JwtStrategy } from '../../jwt/jwt.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../user/entity/user.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { CryptService } from '../crypt/crypt.service';
 import { jwtConfig } from '../../config/jwt.config';
 
 @Module({
@@ -18,7 +19,7 @@ import { jwtConfig } from '../../config/jwt.config';
       useFactory: jwtConfig,
     }),
   ],
-  providers: [AuthService, JwtStrategy, UserService],
+  providers: [AuthService, JwtStrategy, UserService, CryptService],
   controllers: [AuthController],
   exports: [AuthService],
 })

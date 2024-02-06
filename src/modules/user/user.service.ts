@@ -11,6 +11,7 @@ import { UserInfo } from './types';
 import * as bcrypt from 'bcrypt';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
+import { CryptService } from '../crypt/crypt.service';
 
 @Injectable()
 export class UserService {
@@ -19,6 +20,7 @@ export class UserService {
     private userRepository: Repository<User>,
     private readonly mailerService: MailerService,
     private readonly configService: ConfigService,
+    private readonly cryptService: CryptService,
   ) {}
 
   async findByEmail(email: string): Promise<User> {
@@ -108,7 +110,8 @@ export class UserService {
   }
 
   async validatePassword(user: User, password: string): Promise<boolean> {
-    return user.validatePassword(password);
+    const data = await this.findById(user.id);
+    return this.cryptService.compare(password, data.password);
   }
 
   async findUserByEmail(email: string): Promise<User> {

@@ -6,23 +6,34 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Token } from './entity/token.entity';
+import { CryptService } from '../crypt/crypt.service';
 import { User } from '../user/entity/user.entity';
-import { TOKEN_TYPE } from '../../shared/types';
-import * as bcrypt from 'bcrypt';
-const BCRYPT_SALT_ROUNDS = 10;
+import { TOKEN_TYPE, TOKEN_VALUE_TYPE } from '../../shared/types';
+import { UserService } from '../user/user.service';
+import {
+  TOKEN_INVALID,
+  USER_NOT_FOUND,
+  TOKEN_EXPIRATION,
+} from '../../shared/const';
+
 const TOKEN_EXPIRATION_TIME = 60 * 60 * 1000;
 const TOKEN_GENERATION_LIMIT_TIME = 3 * 60 * 1000;
 
 @Injectable()
 export class TokenService {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
     @InjectRepository(Token)
     private tokenRepository: Repository<Token>,
+    private cryptService: CryptService,
+    private userService: UserService,
   ) {}
 
-  async generateUserToken(data: string, user: User, type: TOKEN_TYPE) {
+  async generateUserToken(
+    data: string,
+    user: User,
+    type: TOKEN_TYPE,
+    valueType: TOKEN_VALUE_TYPE = TOKEN_VALUE_TYPE.HASH,
+  ) {
     const lastToken = await this.tokenRepository.findOne({
       where: { user: user, type: type },
       order: { createdAt: 'DESC' },
@@ -40,10 +51,15 @@ export class TokenService {
       await this.tokenRepository.remove(lastToken);
     }
 
-    const hashedData = await bcrypt.hash(data, BCRYPT_SALT_ROUNDS);
+    let tokenValue;
+    if (valueType === TOKEN_VALUE_TYPE.OTP) {
+      tokenValue = this.generateOtp();
+    } else {
+      tokenValue = await this.cryptService.hash(data);
+    }
     const expiresAt = new Date(Date.now() + TOKEN_EXPIRATION_TIME);
     const token = new Token();
-    token.value = hashedData;
+    token.value = tokenValue;
     token.type = type;
     token.user = user;
     token.expiresAt = expiresAt;
@@ -61,29 +77,19 @@ export class TokenService {
     });
 
     if (!token) {
-      throw new BadRequestException('TOKEN_INVALID');
+      throw new BadRequestException(TOKEN_INVALID);
     }
 
     if (token.expiresAt < new Date()) {
-      throw new BadRequestException('TOKEN_EXPIRED');
+      throw new BadRequestException(TOKEN_EXPIRATION);
     }
 
     return token.user;
   }
 
-  async findTokenByUser(user: User, type: TOKEN_TYPE) {
-    const data = await this.tokenRepository.findOne({
-      where: { user, type },
-      relations: ['user'],
-    });
-
-    if (!data) throw new NotFoundException(`Token not found for user`);
-    return data;
-  }
-
   async removeTokenByUser(user: User, type: TOKEN_TYPE) {
-    const data = await this.userRepository.findOne({ where: { id: user.id } });
-    if (!data) throw new NotFoundException(`User not found for ID: ${user.id}`);
+    const data = await this.userService.findById(user.id);
+    if (!data) throw new NotFoundException(USER_NOT_FOUND);
 
     const token = await this.tokenRepository.findOne({
       where: { user: data, type },
@@ -93,5 +99,9 @@ export class TokenService {
     if (token) {
       await this.tokenRepository.remove(token);
     }
+  }
+
+  private generateOtp(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString();
   }
 }
