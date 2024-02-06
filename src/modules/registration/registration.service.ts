@@ -6,7 +6,6 @@ import { UserService } from '../user/user.service';
 import { MailService } from '../mail/mail.service';
 import { CryptService } from '../crypt/crypt.service';
 import {
-  USER_NEED_CONFIRM_EMAIL,
   USER_ALREADY_REGISTER,
   EMAIL_INVALID,
   TOKEN_INVALID,
@@ -38,8 +37,6 @@ export class RegistrationService {
     if (user) {
       if (user.isEmailConfirmed) {
         throw new BadRequestException(USER_ALREADY_REGISTER);
-      } else {
-        throw new BadRequestException(USER_NEED_CONFIRM_EMAIL);
       }
     }
 
@@ -86,7 +83,7 @@ export class RegistrationService {
    */
   async resetPassword(email: string): Promise<void> {
     const user = await this.userService.findUserByEmail(email);
-    if (!user) {
+    if (!user || !user.isEmailConfirmed) {
       throw new BadRequestException(EMAIL_INVALID);
     }
 

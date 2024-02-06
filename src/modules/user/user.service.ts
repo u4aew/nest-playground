@@ -27,6 +27,15 @@ export class UserService {
     });
   }
 
+  async getUserInfoById(id): Promise<UserInfo> {
+    const user = await this.findById(id);
+    return {
+      email: user.email,
+      name: user.name,
+      locale: user.locale,
+    };
+  }
+
   async findById(id: number): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id } });
 
@@ -39,11 +48,11 @@ export class UserService {
 
   async updateInfo(
     id: number,
-    newName: string,
+    name: string,
     locale?: LOCALE,
   ): Promise<UserInfo> {
     const user = await this.findById(id);
-    user.name = newName;
+    user.name = name;
 
     if (locale) {
       user.locale = locale;

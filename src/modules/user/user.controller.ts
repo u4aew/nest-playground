@@ -17,27 +17,27 @@ export class UserController {
   async getUserInfo(
     @Req() req: RequestWithUser,
   ): Promise<ResponseDto<UserInfo>> {
-    const user = await this.userService.findById(req.user.id);
+    const user = await this.userService.getUserInfoById(req.user.id);
     return new ResponseDto({ data: user });
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('update/info')
-  async updateUserName(
+  async updateInfo(
     @Req() req: RequestWithUser,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<ResponseDto<UserInfo>> {
-    const user = await this.userService.updateInfo(
+    await this.userService.updateInfo(
       req.user.id,
       updateUserDto.name,
       updateUserDto.locale,
     );
-    return new ResponseDto({ data: user });
+    return new ResponseDto();
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('update/password')
-  async changePassword(
+  async updatePassword(
     @Req() req: RequestWithUser,
     @Body() changePasswordDto: ChangePasswordDto,
   ): Promise<ResponseDto<null>> {
