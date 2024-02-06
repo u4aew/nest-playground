@@ -36,6 +36,10 @@ export class TokenService {
       throw new BadRequestException('NEW_TOKEN_TIMEOUT');
     }
 
+    if (lastToken) {
+      await this.tokenRepository.remove(lastToken);
+    }
+
     const hashedData = await bcrypt.hash(data, BCRYPT_SALT_ROUNDS);
     const expiresAt = new Date(Date.now() + TOKEN_EXPIRATION_TIME);
     const token = new Token();
