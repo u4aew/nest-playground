@@ -21,7 +21,7 @@ export class TokenService {
     private tokenRepository: Repository<Token>,
   ) {}
 
-  async saveUserToken(data: string, user: User, type: TOKEN_TYPE) {
+  async generateUserToken(data: string, user: User, type: TOKEN_TYPE) {
     const hashedData = await bcrypt.hash(data, BCRYPT_SALT_ROUNDS);
     const expiresAt = new Date(Date.now() + TOKEN_EXPIRATION_TIME);
     const token = new Token();

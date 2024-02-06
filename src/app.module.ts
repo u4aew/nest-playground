@@ -13,6 +13,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { typeOrmConfig } from './config/typeorm.config';
 import { mailerConfig } from './config/mailer.config';
 import { MailModule } from './modules/mail/mail.module';
+import { CryptModule } from './modules/crypt/crypt.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { MailModule } from './modules/mail/mail.module';
     UserModule,
     TokenModule,
     MailModule,
+    CryptModule,
   ],
   controllers: [AppController],
   providers: [

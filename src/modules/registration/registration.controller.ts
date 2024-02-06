@@ -19,13 +19,13 @@ export class RegistrationController {
   @Post()
   async register(
     @Body() createUserDto: CreateUserDto,
-  ): Promise<ResponseDto<User>> {
-    const data = await this.registrationService.register(
+  ): Promise<ResponseDto<void>> {
+    await this.registrationService.register(
       createUserDto.email,
       createUserDto.password,
       createUserDto.name,
     );
-    return new ResponseDto(data);
+    return new ResponseDto();
   }
 
   /**
@@ -35,10 +35,8 @@ export class RegistrationController {
   async confirmRegister(
     @Body() confirmEmailDto: ConfirmEmailDto,
   ): Promise<ResponseDto<{ code: string }>> {
-    const data = await this.registrationService.confirmRegister(
-      confirmEmailDto.token,
-    );
-    return new ResponseDto({ data });
+    await this.registrationService.confirmRegister(confirmEmailDto.token);
+    return new ResponseDto();
   }
 
   /**

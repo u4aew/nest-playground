@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { User } from '../user/entity/user.entity';
-import { SEND_EMAILS } from '../registration/const';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -13,7 +12,7 @@ export class MailService {
     private readonly configService: ConfigService,
   ) {
     this.shouldSendEmails =
-      this.configService.get<string>(SEND_EMAILS) === 'true';
+      this.configService.get<string>('SEND_EMAILS') === 'true';
   }
 
   private async sendEmail(
