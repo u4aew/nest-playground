@@ -1,4 +1,5 @@
-import { IsString, IsNotEmpty, IsOptional, Matches } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { LOCALE } from '../../../shared/types';
 
 export class UpdateUserDto {
   @IsString()
@@ -7,6 +8,5 @@ export class UpdateUserDto {
 
   @IsString()
   @IsOptional()
-  @Matches(/^[a-z]{2}$/i)
-  locale?: string;
+  locale?: LOCALE;
 }

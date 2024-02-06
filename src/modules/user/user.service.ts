@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entity/user.entity';
+import { LOCALE } from '../../shared/types';
 import { UserInfo } from './types';
 import * as bcrypt from 'bcrypt';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -39,7 +40,7 @@ export class UserService {
   async updateInfo(
     id: number,
     newName: string,
-    locale?: string,
+    locale?: LOCALE,
   ): Promise<UserInfo> {
     const user = await this.findById(id);
     user.name = newName;

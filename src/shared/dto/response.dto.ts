@@ -1,13 +1,13 @@
-import { ResponseHttpStatus } from '../types';
+import { RESPONSE_HTTP_STATUS } from '../types';
 
 export class ResponseDto<T> {
   data: T;
-  status: ResponseHttpStatus;
+  status: RESPONSE_HTTP_STATUS;
 
   constructor({
     data = undefined,
-    status = ResponseHttpStatus.SUCCESS,
-  }: { data?: T; status?: ResponseHttpStatus } = {}) {
+    status = RESPONSE_HTTP_STATUS.SUCCESS,
+  }: { data?: T; status?: RESPONSE_HTTP_STATUS } = {}) {
     this.data = data;
     this.status = status;
   }

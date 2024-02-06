@@ -1,7 +1,7 @@
 doctype html
 html
     head
-        title Сброс пароля
+        title Password Reset
         style.
             body {
                 font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -49,8 +49,8 @@ html
 
     body
         .container
-            h1 Сброс пароля
-            p Здравствуйте, #{name}!
-            p Мы получили запрос на сброс пароля вашего аккаунта. Если вы действительно хотите его сбросить, пожалуйста, используйте ссылку ниже:
-            a(href=`http://yourwebsite.com/proxy/registration/reset?token=${token}`) Сбросить пароль
-            p Если вы не запрашивали сброс пароля, пожалуйста, проигнорируйте это письмо.
+            h1 Password Reset
+            p Hello, #{name}!
+            p We have received a request to reset the password for your account. If you did indeed request a reset, please use the link below:
+            a(href=`http://yourwebsite.com/proxy/registration/reset?token=${token}`) Reset Password
+            p If you did not request a password reset, please ignore this email.

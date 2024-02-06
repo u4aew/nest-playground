@@ -2,16 +2,14 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../user/entity/user.entity';
 import { TokenService } from '../token/token.service';
-import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { TokenType } from '../token/entity/token.entity';
+import { TOKEN_TYPE } from '../../shared/types';
 import { UserService } from '../user/user.service';
+import { MailService } from '../mail/mail.service';
 import {
   USER_ALREADY_REGISTER,
-  EMAILS_TEMPLATE_CONFIG,
   EMAIL_INVALID,
-  SEND_EMAILS,
   TOKEN_INVALID,
   USER_NEED_CONFIRM_EMAIL,
   BCRYPT_SALT_ROUNDS,
@@ -22,9 +20,9 @@ import {
 export class RegistrationService {
   constructor(
     @InjectRepository(User)
-    private readonly mailerService: MailerService,
     private readonly configService: ConfigService,
     private readonly tokenService: TokenService,
+    private readonly mailService: MailService,
     private readonly userService: UserService,
   ) {}
 
@@ -42,24 +40,19 @@ export class RegistrationService {
 
     const newUser = await this.userService.create(email, hashedPassword, name);
 
-    const emailConfirmationToken = await this.tokenService.saveUserToken(
+    const token = await this.tokenService.saveUserToken(
       email,
       newUser,
-      TokenType.EMAIL_CONFIRMATION,
+      TOKEN_TYPE.EMAIL_CONFIRMATION,
     );
 
-    return await this.sendEmail(
-      newUser,
-      EMAILS_TEMPLATE_CONFIG.CONFIRM_EMAIL.SUBJECT,
-      EMAILS_TEMPLATE_CONFIG.CONFIRM_EMAIL.TEMPLATE,
-      emailConfirmationToken,
-    );
+    return await this.mailService.sendRegisterTokenEmail(user, token);
   }
 
   async confirmRegister(token: string): Promise<{ code: string }> {
     const user = await this.tokenService.findUserByToken(
       token,
-      TokenType.EMAIL_CONFIRMATION,
+      TOKEN_TYPE.EMAIL_CONFIRMATION,
     );
     if (!user) {
       throw new BadRequestException(TOKEN_INVALID);
@@ -67,7 +60,7 @@ export class RegistrationService {
     user.isEmailConfirmed = true;
     await this.tokenService.removeTokenByUser(
       user,
-      TokenType.EMAIL_CONFIRMATION,
+      TOKEN_TYPE.EMAIL_CONFIRMATION,
     );
     await this.userService.save(user);
     return {
@@ -75,54 +68,31 @@ export class RegistrationService {
     };
   }
 
-  async resetPassword(email: string): Promise<User> {
+  async resetPassword(email: string): Promise<void> {
     const user = await this.userService.findUserByEmail(email);
 
     if (!user) {
       throw new BadRequestException(EMAIL_INVALID);
     }
 
-    const passwordResetToken = await this.tokenService.saveUserToken(
+    const token = await this.tokenService.saveUserToken(
       email,
       user,
-      TokenType.PASSWORD_RESET,
+      TOKEN_TYPE.PASSWORD_RESET,
     );
 
-    await this.sendEmail(
-      user,
-      EMAILS_TEMPLATE_CONFIG.RESET_PASSWORD.SUBJECT,
-      EMAILS_TEMPLATE_CONFIG.RESET_PASSWORD.TEMPLATE,
-      passwordResetToken,
-    );
-
-    return user;
+    return await this.mailService.sendResetPasswordToken(user, token);
   }
 
   async confirmResetPassword(value: string, newPassword: string): Promise<any> {
     const user = await this.tokenService.findUserByToken(
       value,
-      TokenType.PASSWORD_RESET,
+      TOKEN_TYPE.PASSWORD_RESET,
     );
     user.password = await this.hashPassword(newPassword);
-    await this.tokenService.removeTokenByUser(user, TokenType.PASSWORD_RESET);
+    await this.tokenService.removeTokenByUser(user, TOKEN_TYPE.PASSWORD_RESET);
     await this.userService.save(user);
     return true;
-  }
-
-  private async sendEmail(
-    user: User,
-    subject: string,
-    template: string,
-    token: string,
-  ): Promise<void> {
-    if (this.configService.get<string>(SEND_EMAILS) === 'true') {
-      await this.mailerService.sendMail({
-        to: user.email,
-        subject,
-        template,
-        context: { name: user.name, token },
-      });
-    }
   }
 
   private async hashPassword(password: string): Promise<string> {

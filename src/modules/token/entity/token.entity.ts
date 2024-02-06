@@ -6,11 +6,7 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 import { User } from '../../user/entity/user.entity';
-
-export enum TokenType {
-  EMAIL_CONFIRMATION = 'EMAIL_CONFIRMATION',
-  PASSWORD_RESET = 'PASSWORD_RESET',
-}
+import { TOKEN_TYPE, TOKEN_VALUE_TYPE } from '../../../shared/types';
 
 @Entity()
 export class Token {
@@ -20,18 +16,25 @@ export class Token {
   @Column({ nullable: true })
   value: string;
 
+  @Column({
+    type: 'enum',
+    enum: TOKEN_VALUE_TYPE,
+    default: TOKEN_VALUE_TYPE.HASH,
+  })
+  valueType: TOKEN_VALUE_TYPE;
+
   @CreateDateColumn()
   createdAt: Date;
 
-  @Column({ nullable: true })
+  @Column()
   expiresAt: Date;
 
   @Column({
     type: 'enum',
-    enum: TokenType,
-    default: TokenType.EMAIL_CONFIRMATION,
+    enum: TOKEN_TYPE,
+    default: TOKEN_TYPE.EMAIL_CONFIRMATION,
   })
-  type: TokenType;
+  type: TOKEN_TYPE;
 
   @ManyToOne(() => User)
   user: User;

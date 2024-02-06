@@ -12,6 +12,7 @@ import { DatabaseExceptionFilter } from './shared/filters/database-exception.fil
 import { APP_FILTER } from '@nestjs/core';
 import { typeOrmConfig } from './config/typeorm.config';
 import { mailerConfig } from './config/mailer.config';
+import { MailModule } from './modules/mail/mail.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { mailerConfig } from './config/mailer.config';
     AuthModule,
     UserModule,
     TokenModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,7 +1,7 @@
 doctype html
 html
     head
-        title Подтверждение Email
+        title Email Confirmation
         style.
             body {
                 font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -49,8 +49,8 @@ html
 
     body
         .container
-            h1 Подтверждение Email
-            p Здравствуйте, #{name}!
-            p Мы рады, что вы присоединились к нам! Пожалуйста, подтвердите свой адрес электронной почты, нажав на ссылку ниже, чтобы активировать ваш аккаунт:
-            a(href=`http://yourwebsite.com/proxy/registration/confirm?token=${token}`) Подтвердить Email
-            p Если вы не создавали аккаунт на нашем сайте, пожалуйста, проигнорируйте это письмо.
+            h1 Email Confirmation
+            p Hello, #{name}!
+            p We're glad you joined us! Please confirm your email address by clicking the link below to activate your account:
+            a(href=`http://yourwebsite.com/proxy/registration/confirm?token=${token}`) Confirm Email
+            p If you did not create an account on our website, please ignore this email.

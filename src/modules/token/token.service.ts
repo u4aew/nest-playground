@@ -5,8 +5,9 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Token, TokenType } from './entity/token.entity';
+import { Token } from './entity/token.entity';
 import { User } from '../user/entity/user.entity';
+import { TOKEN_TYPE } from '../../shared/types';
 import * as bcrypt from 'bcrypt';
 const BCRYPT_SALT_ROUNDS = 10;
 const TOKEN_EXPIRATION_TIME = 60 * 60 * 1000;
@@ -20,7 +21,7 @@ export class TokenService {
     private tokenRepository: Repository<Token>,
   ) {}
 
-  async saveUserToken(data: string, user: User, type: TokenType) {
+  async saveUserToken(data: string, user: User, type: TOKEN_TYPE) {
     const hashedData = await bcrypt.hash(data, BCRYPT_SALT_ROUNDS);
     const expiresAt = new Date(Date.now() + TOKEN_EXPIRATION_TIME);
     const token = new Token();
@@ -35,7 +36,7 @@ export class TokenService {
 
   async findUserByToken(
     tokenValue: string,
-    tokenType: TokenType,
+    tokenType: TOKEN_TYPE,
   ): Promise<User> {
     const token = await this.tokenRepository.findOne({
       where: { value: tokenValue, type: tokenType },
@@ -52,7 +53,7 @@ export class TokenService {
     return token.user;
   }
 
-  async findTokenByUser(user: User, type: TokenType) {
+  async findTokenByUser(user: User, type: TOKEN_TYPE) {
     const data = await this.tokenRepository.findOne({
       where: { user, type },
       relations: ['user'],
@@ -62,7 +63,7 @@ export class TokenService {
     return data;
   }
 
-  async removeTokenByUser(user: User, type: TokenType) {
+  async removeTokenByUser(user: User, type: TOKEN_TYPE) {
     const data = await this.userRepository.findOne({ where: { id: user.id } });
     if (!data) throw new NotFoundException(`User not found for ID: ${user.id}`);
 
