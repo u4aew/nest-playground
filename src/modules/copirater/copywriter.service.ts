@@ -12,7 +12,6 @@ export class CopywriterService {
   ) {}
 
   async create(url: string, prompt?: string) {
-    const content = await this.parserService.parsePage(url);
-    return await this.gptService.sendPrompt(`${prompt} ${content}`);
+    return await this.gptService.sendPrompt(`${prompt} ${url}`);
   }
 }
