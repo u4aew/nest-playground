@@ -7,7 +7,6 @@ import { RequestResetDto } from './dto/request-reset.dto';
 import { ConfirmResetDto } from './dto/confirm-reset.dto';
 import { ResponseDto } from '../../shared/dto/response.dto';
 import { User } from '../user/entity/user.entity';
-import { RESPONSE_HTTP_STATUS } from '../../shared/types';
 
 @Controller('proxy/registration')
 @UseFilters(new DatabaseExceptionFilter())

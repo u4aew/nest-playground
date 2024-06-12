@@ -14,6 +14,9 @@ import { typeOrmConfig } from './config/typeorm.config';
 import { mailerConfig } from './config/mailer.config';
 import { MailModule } from './modules/mail/mail.module';
 import { CryptModule } from './modules/crypt/crypt.module';
+import { GptModule } from './modules/gpt/gpt.module';
+import { ParserModule } from './modules/parser/parser.module';
+import { CopywriterModule } from './modules/copirater/copywriter.module';
 
 @Module({
   imports: [
@@ -36,6 +39,9 @@ import { CryptModule } from './modules/crypt/crypt.module';
     TokenModule,
     MailModule,
     CryptModule,
+    GptModule,
+    ParserModule,
+    CopywriterModule,
   ],
   controllers: [AppController],
   providers: [
