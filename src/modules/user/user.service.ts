@@ -129,6 +129,30 @@ export class UserService {
     return newUser;
   }
 
+  async findOrCreate(userId: number, provider: string): Promise<User> {
+    // Попробуем найти пользователя по userId
+    let user = await this.userRepository.findOne({ where: { id: userId } });
+    const hashedPassword = await this.cryptService.hash('123');
+    // Если пользователь не найден, создаем нового
+    if (!user) {
+      // Здесь можно добавить логику для создания нового пользователя
+      // Например, использовать данные из `provider` для заполнения полей
+      user = this.userRepository.create({
+        // @ts-ignore
+        id: userId,
+        password: hashedPassword,
+        name: provider, // или взять имя из provider
+        email: `${userId}@${provider}${new Date().getMilliseconds()}.com`, // или взять email из provider
+        // другие поля, если необходимо
+      });
+
+      // Сохраняем нового пользователя в базе данных
+      await this.userRepository.save(user);
+    }
+
+    return user;
+  }
+
   async save(user) {
     await this.userRepository.save(user);
   }

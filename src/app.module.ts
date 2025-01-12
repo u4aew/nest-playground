@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
+import { GithubOauthModule } from './modules/github/github-oauth.module';
 import { TokenModule } from './modules/token/token.module';
 import { RegistrationModule } from './modules/registration/registration.module';
 import { UserModule } from './modules/user/user.module';
@@ -38,6 +39,7 @@ import { CopywriterModule } from './modules/copirater/copywriter.module';
     UserModule,
     TokenModule,
     MailModule,
+    GithubOauthModule,
     CryptModule,
     GptModule,
     ParserModule,
